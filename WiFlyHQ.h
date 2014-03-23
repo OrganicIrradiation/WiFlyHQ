@@ -130,6 +130,10 @@ public:
     virtual size_t write(uint8_t byte);
     virtual int read() { return debug->read(); }
     virtual int available() { return debug->available(); }
+    
+    //< read data into the buffer until it is full or the next character takes more than timeout millis to arrive
+    virtual int readBufTimeout(char* buf, int size, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);                            // added by Zapalot
+    
     virtual void flush() { return debug->flush(); }
     virtual int peek() { return debug->peek(); }
 

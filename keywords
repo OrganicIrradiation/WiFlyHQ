@@ -176,6 +176,7 @@ createAP			KEYWORD2
 setSoftAP			KEYWORD2
 runWebConfig		KEYWORD2
 
+readBufTimeout		KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
