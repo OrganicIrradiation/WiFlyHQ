@@ -12,48 +12,161 @@ WiFly KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
-begin		KEYWORD2
-join		KEYWORD2
-leave		KEYWORD2
-reboot		KEYWORD2
-open		KEYWORD2
-openComplete	KEYWORD2
-close		KEYWORD2
-getSSID		KEYWORD2
-getDeviceID	KEYWORD2
-getIP		KEYWORD2
-getNetmask	KEYWORD2
-getGateway	KEYWORD2
-getDNS		KEYWORD2
-getMAC		KEYWORD2
-getTime		KEYWORD2
-getUptime	KEYWORD2
-getTimezone	KEYWORD2
-enableDHCP	KEYWORD2
-disableDHCP	KEYWORD2
-isConnected	KEYWORD2
-isAssociated	KEYWORD2
+begin				KEYWORD2
+join				KEYWORD2
+leave				KEYWORD2
+reboot				KEYWORD2
+open				KEYWORD2
+openComplete		KEYWORD2
+close				KEYWORD2
+closeForce			KEYWORD2  ## gmm
+getSSID				KEYWORD2
+getDeviceID			KEYWORD2
+getIP				KEYWORD2
+getNetmask			KEYWORD2
+getGateway			KEYWORD2
+getDNS				KEYWORD2
+getMAC				KEYWORD2
+getTime				KEYWORD2
+getUptime			KEYWORD2
+getTimezone			KEYWORD2
+enableDHCP			KEYWORD2
+disableDHCP			KEYWORD2
+isConnected			KEYWORD2
+isAssociated		KEYWORD2
 
-setSSID		KEYWORD2
-setIP		KEYWORD2
-setNetmask	KEYWORD2
-setGateway	KEYWORD2
-setChannel	KEYWORD2
-setKey		KEYWORD2
-setPassphrase	KEYWORD2
-setSpaceReplace	KEYWORD2
-setDHCP		KEYWORD2
-setIpProtocol	KEYWORD2
-setIpFlags	KEYWORD2
-setUartMode	KEYWORD2
+setSSID				KEYWORD2
+setIP				KEYWORD2
+setNetmask			KEYWORD2
+setGateway			KEYWORD2
+setChannel			KEYWORD2
+setKey				KEYWORD2
+setPassphrase		KEYWORD2
+setSpaceReplace		KEYWORD2
+setDHCP				KEYWORD2
+setIpProtocol		KEYWORD2
+setIpFlags			KEYWORD2
+setUartMode			KEYWORD2
 setBroadcastInterval	KEYWORD2
-setTimeAddress	KEYWORD2
-setTimePort	KEYWORD2
-setTimezone	KEYWORD2
+setTimeAddress		KEYWORD2
+setTimePort			KEYWORD2
+setTimezone			KEYWORD2
 
-sendChunk	KEYWORD2
-sendChunkln	KEYWORD2
+sendChunk			KEYWORD2
+sendChunkln			KEYWORD2
+
+
+
+
+getJoin				KEYWORD2
+getPort				KEYWORD2
+getRate				KEYWORD2
+getTxPower			KEYWORD2
+
+getConnection		KEYWORD2
+getRSSI				KEYWORD2
+
+setJoin				KEYWORD2
+setDeviceID			KEYWORD2
+setBaud				KEYWORD2
+getBaud				KEYWORD2
+getUartMode			KEYWORD2
+getIpFlags			KEYWORD2
+getProtocol			KEYWORD2
+
+getFlushChar		KEYWORD2
+getFlushSize		KEYWORD2
+getFlushTimeout		KEYWORD2
+	
+getSpaceReplace		KEYWORD2
+
+getHostIP			KEYWORD2
+getHostPort			KEYWORD2
+
+setDNS				KEYWORD2
+setRate				KEYWORD2
+setTxPower			KEYWORD2
+
+setHostIP			KEYWORD2
+setHostPort			KEYWORD2
+setHost				KEYWORD2
+
+setProtocol			KEYWORD2
+
+setTimeEnable		KEYWORD2
+
+setAdhocBeacon		KEYWORD2
+setAdhocProbe		KEYWORD2
+getAdhocBeacon		KEYWORD2
+getAdhocProbe		KEYWORD2
+getAdhocReboot		KEYWORD2
+
+setFlushTimeout		KEYWORD2
+setFlushChar		KEYWORD2
+setFlushSize		KEYWORD2
+enableDataTrigger	KEYWORD2
+disableDataTrigger	KEYWORD2
+enableUdpAutoPair	KEYWORD2
+disableUdpAutoPair	KEYWORD2
+
+setIOFunc			KEYWORD2
+	
+sleep				KEYWORD2
+
+time				KEYWORD2
+getRTC				KEYWORD2
+
+getHostByName		KEYWORD2
+ping				KEYWORD2
+
+createAdhocNetwork	KEYWORD2
+
+save				KEYWORD2
+factoryRestore		KEYWORD2
+
+sendto				KEYWORD2
+
+enableHostRestore	KEYWORD2
+disableHostRestore	KEYWORD2
+	
+isInCommandMode		KEYWORD2
+
+write				KEYWORD2
+read				KEYWORD2
+available			KEYWORD2
+flush				KEYWORD2
+peek				KEYWORD2
+
+iptoa				KEYWORD2
+atoip				KEYWORD2
+isDotQuad			KEYWORD2
+
+getFreeMemory		KEYWORD2
+terminal			KEYWORD2
+
+dbgBegin			KEYWORD2
+dbgDump				KEYWORD2
+dbgEnd				KEYWORD2
+debugOn				KEYWORD2
+
+match				KEYWORD2
+multiMatch_P		KEYWORD2
+gets				KEYWORD2
+getsTerm			KEYWORD2
+flushRx				KEYWORD2
+	
+setFtpDefaults		KEYWORD2
+setFtpAddress		KEYWORD2
+setFtpPort			KEYWORD2
+setFtpDirectory		KEYWORD2
+setFtpUser			KEYWORD2
+setFtpPassword		KEYWORD2
+setFtpFilename		KEYWORD2
+setFtpTimer			KEYWORD2
+setFtpMode			KEYWORD2
+ftpGet				KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
+
