@@ -34,7 +34,8 @@ extern unsigned int __bss_end;
 extern unsigned int __heap_start;
 extern void *__brkval;
 
-#undef DEBUG
+//#undef DEBUG //
+#define DEBUG
 
 #ifdef DEBUG
 #define DPRINT(item) debug.print(item)
@@ -2939,9 +2940,26 @@ boolean WiFly::close()
 
     finishCommand();
 
+    
+    if(!connected) debug.println(F("dopo un check con getConnection() e' comunque risultata chiusa"));
+    
     return !connected;
 }
 
+// GMM - forzo chiusura, non basata su status in memoria
+boolean WiFly::closeForce()
+{
+    //flushRx();
+    
+    //startCommand();
+    //send_P(PSTR("close\r"));
+    
+    //if (match_P(PSTR("*CLOS*"))) {
+	//finishCommand();
+	connected = false;
+    return true;
+
+}
 
 WFDebug::WFDebug()
 {

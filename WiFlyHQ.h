@@ -75,7 +75,7 @@
 #include <IPAddress.h>
 
 #if (ARDUINO >= 103)
-typedef const char PROGMEM prog_char;
+//typedef const char PROGMEM prog_char;
 #endif
 
 /* IP Protocol bits */
@@ -264,6 +264,7 @@ public:
     boolean open(const char *addr, uint16_t port=80, boolean block=true);
     boolean open(IPAddress addr, uint16_t port=80, boolean block=true);
     boolean close();
+    boolean closeForce(); // by GMM
     boolean openComplete();
     boolean isConnected();
     boolean isInCommandMode();
