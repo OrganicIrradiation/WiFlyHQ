@@ -1176,18 +1176,18 @@ int WiFly::getsTerm(char *buf, int size, char term, uint16_t timeout)
 }
 
 
-+/*read data into the buffer until its full or the next character takes more than timeout millis to arrive. return the number of byted read*/
-+int WiFly::readBufTimeout(char* buf, int size, uint16_t timeout){                     // added by Zapalot
-    +	int pos=0;
-    +	DPRINTLN("reading from serial..");
-    +	while(readTimeout(buf+pos, timeout)&& pos<size-1){
-        +		DPRINT(buf[pos]);
-        +		pos++;
-        +		};
-    +	//make sure the buffer is zero terminated
-    +	buf[pos]=0;
-    +	return (pos);
-    +}
+/*read data into the buffer until its full or the next character takes more than timeout millis to arrive. return the number of byted read*/
+int WiFly::readBufTimeout(char* buf, int size, uint16_t timeout){                     // added by Zapalot
+    	int pos=0;
+    	DPRINTLN("reading from serial..");
+    	while(readTimeout(buf+pos, timeout)&& pos<size-1){
+        		DPRINT(buf[pos]);
+        		pos++;
+        		};
+    	//make sure the buffer is zero terminated
+    	buf[pos]=0;
+    	return (pos);
+    }
 
 /**
  * Read characters into the buffer until a carriage-return and newline is reached.
