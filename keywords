@@ -166,6 +166,17 @@ setFtpTimer			KEYWORD2
 setFtpMode			KEYWORD2
 ftpGet				KEYWORD2
 
+
+
+
+getNumNetworks		KEYWORD2
+getScanNew			KEYWORD2
+#setChannel			KEYWORD2
+createAP			KEYWORD2
+setSoftAP			KEYWORD2
+runWebConfig		KEYWORD2
+
+
 #######################################
 # Constants (LITERAL1)
 #######################################

@@ -115,6 +115,7 @@
 #define WIFLY_WLAN_JOIN_AUTO		0x01	/* Auto-join network set in SSID, passkey, and channel. */
 #define WIFLY_WLAN_JOIN_ANY		0x02	/* Ignore SSID and join strongest network using passkey. */
 #define WIFLY_WLAN_JOIN_ADHOC		0x04	/* Create an Adhoc network using SSID, Channel, IP and NetMask */
+#define WIFLY_WLAN_JOIN_AP		0x07	/* Create an AP using SSID, Channel, IP and NetMask */                         // added by lpercifield
 
 #define WIFLY_DEFAULT_TIMEOUT		500	/* 500 milliseconds */
 
@@ -186,6 +187,7 @@ public:
     boolean setGateway(const char *buf);
     boolean setDNS(const char *buf);
     boolean setChannel(uint8_t channel);
+    boolean setChannel(const char *buf); // added by lpercifield
     boolean setKey(const char *buf);
     boolean setPassphrase(const char *buf);
     boolean setSpaceReplace(char ch);
@@ -226,6 +228,9 @@ public:
 
     boolean setIOFunc(const uint8_t func);
     
+    char *getScanNew(char *buf, int size, bool json = false);/*cp*/     // added by lpercifield
+    uint8_t getNumNetworks();/*cp*/                                     // added by lpercifield
+    
     boolean sleep(uint16_t seconds = 0);
     
     boolean time();
@@ -240,7 +245,11 @@ public:
     boolean enableDHCP();
     boolean disableDHCP();
     
+    boolean setSoftAP(const char *buf);                             // added by lpercifield
+    boolean setSoftAP();                                            // added by lpercifield
+    boolean runWebConfig();                                         // added by lpercifield
     boolean createAdhocNetwork(const char *ssid, uint8_t channel);
+    boolean createAP(const char *ssid, const char *channel);        // added by lpercifield
     boolean join(const char *ssid, uint16_t timeout=20000);
     boolean join(uint16_t timeout=20000);
     boolean join(const char *ssid, const char *password, bool dhcp=true, uint8_t mode=WIFLY_MODE_WPA, uint16_t timeout=20000);
