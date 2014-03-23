@@ -147,6 +147,9 @@ public:
     WiFly();
     
     boolean begin(Stream *serialdev, Stream *debugPrint = NULL);
+
+    boolean startCommand();  // GMM from private to pubblic
+    boolean finishCommand(); // GMM from private to pubblic
     
     char *getSSID(char *buf, int size);
     uint8_t getJoin();
@@ -357,8 +360,6 @@ public:
     boolean checkPrompt(const char *str);
     int getResponse(char *buf, int size, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
     boolean readTimeout(char *ch, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
-    boolean startCommand();
-    boolean finishCommand();
     char *getopt(int opt, char *buf, int size);
     uint32_t getopt(int opt, uint8_t base=DEC);
     boolean setopt(const prog_char *cmd, const char *buf=NULL, const __FlashStringHelper *buf_P=NULL, bool spacesub=false);

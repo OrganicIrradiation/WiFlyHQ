@@ -178,6 +178,9 @@ runWebConfig		KEYWORD2
 
 readBufTimeout		KEYWORD2
 
+startCommand		KEYWORD2
+finishCommand		KEYWORD2
+
 #######################################
 # Constants (LITERAL1)
 #######################################
