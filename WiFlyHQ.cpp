@@ -630,31 +630,30 @@ int WiFly::read()
  * @retval 0 - no data available
  * @retval -1 - active TCP connection was closed,
  */
-int WiFly::available()
+int WiFly::available()                              // modified by faritka: (I modified it to always check for the "CLOS" statement, connected or not)
 {
     int count;
-
+    
     count = serial->available();
     if (count > 0) {
-	if (debugOn) {
-	    debug.print(F("available: peek = "));
-	    debug.println((char)serial->peek());
-	}
-	/* Check for TCP stream closure */
-	if (serial->peek() == '*') {
-	    if (connected) {
-		if (checkClose(true)) {
-		    return -1;
-		} else {
-		    return peekCount + serial->available();
-		}
-	    } else {
-		checkOpen(true);
-		return peekCount + serial->available();
-	    }
-	}
+        if (debugOn) {
+            debug.print(F("available: peek = "));
+            debug.println((char)serial->peek());
+        }
+        /* Check for TCP stream closure */
+        if (serial->peek() == '*') {
+            if (checkClose(true)) {
+                return -1;
+            } else {
+                return peekCount + serial->available();
+            }
+            if (!connected) {
+                checkOpen(true);
+                return peekCount + serial->available();
+            }
+        }
     }
-
+    
     return count+peekCount;
 }
 
