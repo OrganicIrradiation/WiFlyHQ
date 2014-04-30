@@ -74,7 +74,7 @@
 #include <avr/pgmspace.h>
 #include <IPAddress.h>
 
-#if (ARDUINO >= 103)
+#if (ARDUINO >= 103 && ARDUINO < 105)
 typedef const char PROGMEM prog_char;
 #endif
 
@@ -116,7 +116,7 @@ typedef const char PROGMEM prog_char;
 #define WIFLY_WLAN_JOIN_ANY		0x02	/* Ignore SSID and join strongest network using passkey. */
 #define WIFLY_WLAN_JOIN_ADHOC		0x04	/* Create an Adhoc network using SSID, Channel, IP and NetMask */
 
-#define WIFLY_DEFAULT_TIMEOUT		500	/* 500 milliseconds */
+#define WIFLY_DEFAULT_TIMEOUT		1000	/* 500 milliseconds */
 
 #define WIFLY_MODE_WPA			0	
 #define WIFLY_MODE_WEP			1
@@ -142,6 +142,10 @@ public:
     WiFly();
     
     boolean begin(Stream *serialdev, Stream *debugPrint = NULL);
+    
+    int8_t performScan(uint16_t duration = 200, bool passive = false);
+    uint8_t getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * security,
+    	uint16_t * capabilities, uint8_t * wpa, uint8_t * wps, byte * mac, char * ssid);
     
     char *getSSID(char *buf, int size);
     uint8_t getJoin();
@@ -332,6 +336,10 @@ public:
 
     boolean match_P(const prog_char *str, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
     int8_t multiMatch_P(const prog_char *str[], uint8_t count, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
+
+	boolean readIntDec(uint16_t * out, uint8_t length);
+	boolean readIntHex(uint16_t * out, uint8_t length = 2);
+	void skipCharacters(uint8_t c = 1);
 
     void send_P(const prog_char *str);
     void send(const char *str);

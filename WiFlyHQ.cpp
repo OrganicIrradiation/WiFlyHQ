@@ -126,6 +126,8 @@ const prog_char resp_Join[] PROGMEM = "Join=";
 const prog_char resp_Rate[] PROGMEM = "Rate=";
 const prog_char resp_Power[] PROGMEM = "TxPower=";
 const prog_char resp_Replace[] PROGMEM = "Replace=";
+const prog_char resp_ScanResult_Start[] PROGMEM = "SCAN:Found ";
+const prog_char resp_ScanResult_End[] PROGMEM = "END:";
 
 /* Request and response for specific info */
 static struct {
@@ -238,11 +240,11 @@ static int simple_utoa(uint32_t val, uint8_t base, char *buf, int size)
 }
 
 /** Simple hex string to uint32_t */
-static uint32_t atoh(char *buf)
+static uint32_t atoh(char *buf, bool checkPrefix = true)
 {
     uint32_t res=0;
     char ch;
-    bool gotX = false;
+    bool gotX = !checkPrefix;
 
     while ((ch=*buf++) != 0) {
 	if (ch >= '0' && ch <= '9') {
@@ -1315,6 +1317,187 @@ uint16_t WiFly::getConnection()
     }
 
     return res;
+}
+
+/**
+ * Send a request to the WiFly device to start scanning for WiFi
+ * networks and wait for the device to comeback with the results.
+ * After scanning you must call WiFly::getNextScanResult the
+ * until it returns 0 (this method will also release the lock).
+ * @param duration - time to scan on each channel (ms)
+ * @param passive - false for an active scan, true for a passive scan
+ * @retval -1 - Failed to start the scan
+ * @retval number - Number of networks found
+ * @author Arno Moonen
+ */
+int8_t WiFly::performScan(uint16_t duration, bool passive) {
+	if (!startCommand()) {
+		debug.println(F("performScan: failed to start"));
+		return -1;
+    }
+    
+    // Do request
+    send_P(PSTR("scan "));
+    {
+		char buf[6];
+		simple_utoa(duration, 10, buf, sizeof(buf));
+		send(buf);
+    }
+    if(passive) {
+    	send_P(PSTR(" P"));
+    }
+    send('\r');
+    
+    // Wait for response (needs some time to finish scanning, depending on
+    // the duration set per channel)
+    uint16_t to = 0xFFFF;
+	debug.println(F("performScan: timeout = "));
+	debug.println(to, DEC);
+    if(match_P(PSTR("SCAN:Found "))) {
+    	char buf[4];
+    	gets(buf, sizeof(buf));
+    	// Return number of networks found
+    	// Note: finishCommand will be called by getNextScanResult
+    	// once it sees the appropriate END message
+    	return (int8_t) atou(buf);
+    }
+    
+    // Failed
+    finishCommand();
+	debug.println(F("performScan: failed to get results in time"));
+    return -1;
+}
+
+/**
+ * Get the results of the network scan, one by one.
+ * Note that you must call WiFly::performScan before calling this method.
+ * All arguments are "buffers". In other words: the values will be stored in the 
+ * pointers given as an argument.
+ * @param channel - WiFi channel
+ * @param rssi - Received Signal Strength Indication (should be multiplied by -1 to get the original value)
+ * @param security - Security Mode
+ * @param capabilities - Capabilities
+ * @param wpa - WPA Configuration
+ * @param wps - WPS Mode
+ * @param mac - MAC Address (BSSID; 6 bytes)
+ * @param ssid - SSID (Network name; up to 32 characters)
+ * @retval 0 - End of results
+ * @retval number - Result index
+ * @author Arno Moonen
+ */
+uint8_t WiFly::getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * security,
+    	uint16_t * capabilities, uint8_t * wpa, uint8_t * wps, uint8_t * mac, char * ssid) {
+    // Check if scan has been done
+//     if (startCommand()) {
+//     	debug.println(F("getNextScanResult: No scan performed!"));
+//     	finishCommand();
+//     	return 0;
+//     }
+    
+    // TODO Check result of read operations
+    uint16_t ibuf;
+    
+    // Result index
+    readIntDec(&ibuf, 2);
+    uint8_t index = (uint8_t) ibuf;
+    
+    // Skip comma
+    skipCharacters(1);
+    
+    // Channel
+    readIntDec(&ibuf, 2);
+    *channel = (uint8_t) ibuf;
+    
+    // Skip comma and minus
+    skipCharacters(2);
+    
+    // RSSI
+    readIntDec(&ibuf, 2);
+    *rssi = (uint8_t) ibuf;
+    
+    // Skip comma
+    skipCharacters(1);
+    
+    // Security mode
+    readIntDec(&ibuf, 2);
+    *security = (uint8_t) ibuf;
+    
+    // Skip comma
+    skipCharacters(1);
+    
+    // Capabilities
+    readIntHex(&ibuf, 4);
+	*capabilities = ibuf;
+    
+    // Skip comma
+    skipCharacters(1);
+    
+    // WPA Configuration
+    readIntHex(&ibuf, 2);
+	*wpa = (uint8_t) ibuf;
+    
+    // Skip comma
+    skipCharacters(1);
+    
+    // WPS Mode
+    readIntHex(&ibuf, 2);
+	*wps = (uint8_t) ibuf;
+    
+    // Skip comma
+    skipCharacters(1);
+    
+    // MAC Address
+	uint8_t lmac[6];
+    for(uint8_t i = 0; i < 6; i++) {
+    	readIntHex(&ibuf, 2);
+		lmac[i] = (uint8_t) ibuf;
+    	
+    	// Skip colon, comma
+    	skipCharacters(1);
+    }
+    memcpy((uint8_t*)mac, (uint8_t*)lmac, 6);
+    
+    // SSID
+    gets(ssid, 33);
+    
+    return index;
+}
+
+void WiFly::skipCharacters(uint8_t c) {
+	char ch;
+	while(c > 0) {
+		readTimeout(&ch);
+		c--;
+	}
+}
+
+boolean WiFly::readIntDec(uint16_t * out, uint8_t length) {
+	char buf[length + 1];
+	for(uint8_t i = 0; i < length; i++) {
+		char c;
+		if(!readTimeout(&c)) {
+			return false;
+		}
+		buf[i] = c;
+	}
+	buf[length] = '\0';
+    *out = (uint16_t) atou(buf);
+    return true;
+}
+
+
+boolean WiFly::readIntHex(uint16_t * out, uint8_t length) {
+	char buf[length + 1];
+	for(uint8_t i = 0; i < length; i++) {
+		char c;
+		if(!readTimeout(&c)) {
+			return false;
+		}
+		buf[i] = c;
+	}
+	buf[length] = '\0';
+    *out = (uint16_t) atoh(buf, false);
+    return true;
 }
 
 /** Get local IP address */
