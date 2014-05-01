@@ -78,6 +78,18 @@
 typedef const char PROGMEM prog_char;
 #endif
 
+#ifdef WIFLY_DEBUG
+#define WIFLY_PRINT(item) debug.print(item)
+#define WIFLY_PRINTLN(item) debug.println(item)
+#define WIFLY_PRINTB(item, b) debug.print(item, b)
+#define WIFLY_PRINTLNB(item, b) debug.println(item, b)
+#else
+#define WIFLY_PRINT(item)
+#define WIFLY_PRINTLN(item)
+#define WIFLY_PRINTB(item, b)
+#define WIFLY_PRINTLNB(item, b)
+#endif
+
 /* IP Protocol bits */
 #define WIFLY_PROTOCOL_UDP		0x01
 #define WIFLY_PROTOCOL_TCP		0x02

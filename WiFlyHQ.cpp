@@ -34,16 +34,6 @@ extern unsigned int __bss_end;
 extern unsigned int __heap_start;
 extern void *__brkval;
 
-#undef DEBUG
-
-#ifdef DEBUG
-#define DPRINT(item) debug.print(item)
-#define DPRINTLN(item) debug.println(item)
-#else
-#define DPRINT(item)
-#define DPRINTLN(item)
-#endif
-
 #define WIFLY_STATUS_TCP_MASK 		0x000F
 #define WIFLY_STATUS_TCP_OFFSET		0
 #define WIFLY_STATUS_ASSOC_MASK 	0x0001
@@ -126,8 +116,6 @@ const prog_char resp_Join[] PROGMEM = "Join=";
 const prog_char resp_Rate[] PROGMEM = "Rate=";
 const prog_char resp_Power[] PROGMEM = "TxPower=";
 const prog_char resp_Replace[] PROGMEM = "Replace=";
-const prog_char resp_ScanResult_Start[] PROGMEM = "SCAN:Found ";
-const prog_char resp_ScanResult_End[] PROGMEM = "END:";
 
 /* Request and response for specific info */
 static struct {
@@ -355,24 +343,24 @@ void WiFly::init()
     lastHost[0] = 0;
 
     if (!setopt(PSTR("set u m 1"), (char *)NULL)) {
-	debug.println(F("Failed to turn off echo"));
+		WIFLY_PRINTLN(F("Failed to turn off echo"));
     }
     if (!setopt(PSTR("set sys printlvl 0"), (char *)NULL)) {
-	debug.println(F("Failed to turn off sys print"));
+		WIFLY_PRINTLN(F("Failed to turn off sys print"));
     }
     if (!setopt(PSTR("set comm remote 0"), (char *)NULL)) {
-	debug.println(F("Failed to set comm remote"));
+		WIFLY_PRINTLN(F("Failed to set comm remote"));
     }
 
     /* update connection status */
     getConnection();
 
-    DPRINT(F("tcp status: ")); DPRINT(status.tcp); DPRINT("\n\r");
-    DPRINT(F("assoc status: ")); DPRINT(status.assoc); DPRINT("\n\r");
-    DPRINT(F("authen status: ")); DPRINT(status.authen); DPRINT("\n\r");
-    DPRINT(F("dns status: ")); DPRINT(status.dnsServer); DPRINT("\n\r");
-    DPRINT(F("dns found status: ")); DPRINT(status.dnsFound); DPRINT("\n\r");
-    DPRINT(F("channel status: ")); DPRINT(status.channel); DPRINT("\n\r");
+    WIFLY_PRINT(F("tcp status: ")); WIFLY_PRINT(status.tcp); WIFLY_PRINT("\n\r");
+    WIFLY_PRINT(F("assoc status: ")); WIFLY_PRINT(status.assoc); WIFLY_PRINT("\n\r");
+    WIFLY_PRINT(F("authen status: ")); WIFLY_PRINT(status.authen); WIFLY_PRINT("\n\r");
+    WIFLY_PRINT(F("dns status: ")); WIFLY_PRINT(status.dnsServer); WIFLY_PRINT("\n\r");
+    WIFLY_PRINT(F("dns found status: ")); WIFLY_PRINT(status.dnsFound); WIFLY_PRINT("\n\r");
+    WIFLY_PRINT(F("channel status: ")); WIFLY_PRINT(status.channel); WIFLY_PRINT("\n\r");
 
     dhcpMode = getDHCPMode();
     dhcp = !((dhcpMode == WIFLY_DHCP_MODE_OFF) || (dhcpMode == WIFLY_DHCP_MODE_SERVER));
@@ -394,14 +382,14 @@ boolean WiFly::begin(Stream *serialdev, Stream *debugPrint)
     serial = serialdev;
 
     if (!enterCommandMode()) {
-	debug.println(F("Failed to enter command mode"));
+	WIFLY_PRINTLN(F("Failed to enter command mode"));
 	return false;
     }
 
     init();
 
     if (!exitCommandMode()) {
-	debug.println(F("Failed to exit command mode"));
+	WIFLY_PRINTLN(F("Failed to exit command mode"));
 	return false;
     }
 
@@ -431,9 +419,9 @@ int WiFly::getFreeMemory()
 void WiFly::flushRx(int timeout)
 {
     char ch;
-    DPRINT(F("flush\n\r"));
+    WIFLY_PRINT(F("flush\n\r"));
     while (readTimeout(&ch,timeout));
-    DPRINT(F("flushed\n\r"));
+    WIFLY_PRINT(F("flushed\n\r"));
 }
 
 /**
@@ -490,8 +478,8 @@ boolean WiFly::checkStream(const prog_char *str, boolean peeked)
     char next;
 
 #ifdef DEBUG
-    debug.print(F("checkStream: "));
-    debug.println((const __FlashStringHelper *)str);
+    WIFLY_PRINT(F("checkStream: "));
+    WIFLY_PRINTLN((const __FlashStringHelper *)str);
 #endif
 
     if (peekCount > 0) {
@@ -536,7 +524,7 @@ boolean WiFly::checkStream(const prog_char *str, boolean peeked)
 	    }
 	    peekCount++;
 	    if (peekCount > sizeof(peekBuf)) {
-		debug.println(F("ERROR peek.1 buffer overlow"));
+		WIFLY_PRINTLN(F("ERROR peek.1 buffer overlow"));
 	    }
 	    break;
 	}
@@ -545,7 +533,7 @@ boolean WiFly::checkStream(const prog_char *str, boolean peeked)
 	}
 	peekCount++;
 	if (peekCount > sizeof(peekBuf)) {
-	    debug.println(F("ERROR peek.2 buffer overlow"));
+	    WIFLY_PRINTLN(F("ERROR peek.2 buffer overlow"));
 	}
 	next = pgm_read_byte(str++);
 	if (next == '\0') {
@@ -570,7 +558,7 @@ boolean WiFly::checkClose(boolean peeked)
 {
     if (checkStream(PSTR("*CLOS*"), peeked)) {
 	connected = false;
-	DPRINTLN(F("Stream closed"));
+	WIFLY_PRINTLN(F("Stream closed"));
 	return true;
     }
     return false;
@@ -584,9 +572,9 @@ boolean WiFly::checkClose(boolean peeked)
 boolean WiFly::checkOpen(boolean peeked)
 {
     if (checkStream(PSTR("*OPEN*"), peeked)) {
-	connected = true;
-	DPRINTLN(F("Stream opened"));
-	return true;
+		connected = true;
+		WIFLY_PRINTLN(F("Stream opened"));
+		return true;
     }
     return false;
 }
@@ -638,8 +626,8 @@ int WiFly::available()
     count = serial->available();
     if (count > 0) {
 	if (debugOn) {
-	    debug.print(F("available: peek = "));
-	    debug.println((char)serial->peek());
+	    WIFLY_PRINT(F("available: peek = "));
+	    WIFLY_PRINTLN((char)serial->peek());
 	}
 	/* Check for TCP stream closure */
 	if (serial->peek() == '*') {
@@ -669,17 +657,17 @@ void WiFly::flush()
 void WiFly::dump(const char *str)
 {
     while (*str) {
-	debug.print(*str,HEX);
-	debug.print(' ');
+	WIFLY_PRINTB(*str,HEX);
+	WIFLY_PRINT(' ');
 	str++;
     }
-    debug.println();
+    WIFLY_PRINTLN();
 }
 
 /** Send a string to the WiFly */
 void WiFly::send(const char *str)
 {
-    DPRINT(F("send: ")); DPRINT(str); DPRINT("\n\r");
+    WIFLY_PRINT(F("send: ")); WIFLY_PRINT(str); WIFLY_PRINT("\n\r");
     print(str);
     //serial->print(str);
 }
@@ -694,8 +682,8 @@ void WiFly::send(const char ch)
 /** Send a string from PROGMEM to the WiFly */
 void WiFly::send_P(const prog_char *str)
 {
-    DPRINT(F("send_P: "));
-    DPRINTLN((const __FlashStringHelper *)str);
+    WIFLY_PRINT(F("send_P: "));
+    WIFLY_PRINTLN((const __FlashStringHelper *)str);
 
     print((const __FlashStringHelper *)str);
 }
@@ -735,16 +723,16 @@ void WiFly::dbgDump()
     }
 
     if (dbgInd > 0) {
-	debug.println(F("debug dump"));
+	WIFLY_PRINTLN(F("debug dump"));
 	for (ind=0; ind<dbgInd; ind++) {
-	    debug.print(ind);
-	    debug.print(F(": "));
-	    debug.print(dbgBuf[ind],HEX);
+	    WIFLY_PRINT(ind);
+	    WIFLY_PRINT(F(": "));
+	    WIFLY_PRINTB(dbgBuf[ind],HEX);
 	    if (isprint(dbgBuf[ind])) {
-		debug.print(' ');
-		debug.print(dbgBuf[ind]);
+		WIFLY_PRINT(' ');
+		WIFLY_PRINT(dbgBuf[ind]);
 	    }
-	    debug.println();
+	    WIFLY_PRINTLN();
 	}
     }
     free(dbgBuf);
@@ -774,21 +762,21 @@ boolean WiFly::readTimeout(char *chp, uint16_t timeout)
 		dbgBuf[dbgInd++] = ch;
 	    }
 	    if (debugOn) {
-		debug.print(ind++);
-		debug.print(F(": "));
-		debug.print(ch,HEX);
+		WIFLY_PRINT(ind++);
+		WIFLY_PRINT(F(": "));
+		WIFLY_PRINTB(ch,HEX);
 		if (isprint(ch)) {
-		    debug.print(' ');
-		    debug.print(ch);
+		    WIFLY_PRINT(' ');
+		    WIFLY_PRINT(ch);
 		}
-		debug.println();
+		WIFLY_PRINTLN();
 	    }
 	    return true;
 	}
     }
 
     if (debugOn) {
-	debug.println(F("readTimeout - timed out"));
+	WIFLY_PRINTLN(F("readTimeout - timed out"));
     }
 
     return false;
@@ -818,7 +806,7 @@ boolean WiFly::setPrompt()
 				//prompt[ind++] = '\r';
 				//prompt[ind++] = '\n';
 				prompt[ind] = 0;
-				DPRINT(F("setPrompt: ")); DPRINT(prompt); DPRINT("\n\r");
+				WIFLY_PRINT(F("setPrompt: ")); WIFLY_PRINT(prompt); WIFLY_PRINT("\n\r");
 				gotPrompt = true;
 				gets(NULL,0);
 				return true;
@@ -871,8 +859,8 @@ boolean WiFly::match(const char *str, uint16_t timeout)
 
 #ifdef DEBUG
     if (debugOn) {
-	debug.print(F("match: "));
-	debug.println(str);
+	WIFLY_PRINT(F("match: "));
+	WIFLY_PRINTLN(str);
     }
 #endif
 
@@ -891,12 +879,12 @@ boolean WiFly::match(const char *str, uint16_t timeout)
 	    }
 	}
 	if (*match == '\0') {
-	    DPRINT(F("match: true\n\r"));
+	    WIFLY_PRINT(F("match: true\n\r"));
 	    return true;
 	}
     }
 
-    DPRINT(F("match: false\n\r"));
+    WIFLY_PRINT(F("match: false\n\r"));
     return false;
 }
 
@@ -916,8 +904,8 @@ boolean WiFly::match_P(const prog_char *str, uint16_t timeout)
     char ch, ch_P;
 
     if (debugOn) {
-	debug.print(F("match_P: "));
-	debug.println((const __FlashStringHelper *)str);
+	WIFLY_PRINT(F("match_P: "));
+	WIFLY_PRINTLN((const __FlashStringHelper *)str);
     }
 
     ch_P = pgm_read_byte(match);
@@ -939,12 +927,12 @@ boolean WiFly::match_P(const prog_char *str, uint16_t timeout)
 
 	ch_P = pgm_read_byte(match);
 	if (ch_P == '\0') {
-	    DPRINT(F("match_P: true\n\r"));
+	    WIFLY_PRINT(F("match_P: true\n\r"));
 	    return true;
 	}
     }
 
-    DPRINT(F("match_P: false\n\r"));
+    WIFLY_PRINT(F("match_P: false\n\r"));
     return false;
 }
 
@@ -1005,10 +993,10 @@ int8_t WiFly::multiMatch_P(const prog_char *str[], uint8_t count, uint16_t timeo
 	match[ind].active = false;
 	match[ind].str = str[ind];
 	if (debugOn) {
-	    debug.print(F("multiMatch_P: "));
-	    debug.print(ind);
-	    debug.print(' ');
-	    debug.println((const __FlashStringHelper *)str[ind]);
+	    WIFLY_PRINT(F("multiMatch_P: "));
+	    WIFLY_PRINT(ind);
+	    WIFLY_PRINT(' ');
+	    WIFLY_PRINTLN((const __FlashStringHelper *)str[ind]);
 	}
     }
 
@@ -1028,13 +1016,13 @@ int8_t WiFly::multiMatch_P(const prog_char *str[], uint8_t count, uint16_t timeo
 
 	    if (pgm_read_byte(match[ind].str) == '\0') {
 		/* Got a match */
-		DPRINTLN(F("multiMatch_P: true"));
+		WIFLY_PRINTLN(F("multiMatch_P: true"));
 		return ind;
 	    }
 	}
     }
 
-    DPRINTLN(F("multiMatch_P: failed"));
+    WIFLY_PRINTLN(F("multiMatch_P: failed"));
     return -1;
 }
 
@@ -1067,14 +1055,14 @@ boolean WiFly::getPrompt(uint16_t timeout)
     boolean res;
 
     if (!gotPrompt) {
-	DPRINT(F("setPrompt\n\r"));
+	WIFLY_PRINT(F("setPrompt\n\r"));
 
 	res = setPrompt();
 	if (!res) {
-	    debug.println(F("setPrompt failed"));
+	    WIFLY_PRINTLN(F("setPrompt failed"));
 	}
     } else {
-	DPRINT(F("getPrompt \"")); DPRINT(prompt); DPRINT("\"\n\r");
+	WIFLY_PRINT(F("getPrompt \"")); WIFLY_PRINT(prompt); WIFLY_PRINT("\"\n\r");
 	res = match(prompt, timeout);
     }
     return res;
@@ -1109,16 +1097,16 @@ boolean WiFly::enterCommandMode()
     }
 
     /* See if we're already in command mode */
-    DPRINT(F("Check in command mode\n\r"));
+    WIFLY_PRINT(F("Check in command mode\n\r"));
     serial->write('\r');
     if (getPrompt()) {
 	inCommandMode = true;
-	DPRINT(F("Already in command mode\n\r"));
+	WIFLY_PRINT(F("Already in command mode\n\r"));
 	return true;
     }
 
     for (retry=0; retry<5; retry++) {
-	DPRINT(F("send $$$ ")); DPRINT(retry); DPRINT("\n\r");
+	WIFLY_PRINT(F("send $$$ ")); WIFLY_PRINT(retry); WIFLY_PRINT("\n\r");
 	delay(250);
 	send_P(PSTR("$$$"));
 	delay(250);
@@ -1144,7 +1132,7 @@ boolean WiFly::exitCommandMode()
 	inCommandMode = false;
 	return true;
     } else {
-	debug.println(F("Failed to exit\n\r"));
+	WIFLY_PRINTLN(F("Failed to exit\n\r"));
 	return false;
     }
 }
@@ -1154,7 +1142,7 @@ int WiFly::getsTerm(char *buf, int size, char term, uint16_t timeout)
     char ch;
     int ind=0;
 
-    DPRINTLN(F("getsTerm:"));
+    WIFLY_PRINTLN(F("getsTerm:"));
 
     while (readTimeout(&ch, timeout)) {
 	if (ch == term) {
@@ -1191,7 +1179,7 @@ int WiFly::gets(char *buf, int size, uint16_t timeout)
     char ch;
     int ind=0;
 
-    DPRINTLN(F("gets:"));
+    WIFLY_PRINTLN(F("gets:"));
 
     while (readTimeout(&ch, timeout)) {
 	if (ch == '\r') {
@@ -1235,7 +1223,7 @@ boolean WiFly::startCommand()
 	 * when using several commands to implement another command.
 	 */
     } else {
-	DPRINT(F("Already in command mode\n\r"));
+	WIFLY_PRINT(F("Already in command mode\n\r"));
     }
     exitCommand++;
     return true;
@@ -1276,13 +1264,13 @@ uint16_t WiFly::getConnection()
     int len;
 
     if (!startCommand()) {
-	debug.println(F("getCon: failed to start"));
+	WIFLY_PRINTLN(F("getCon: failed to start"));
 	return 0;
     }
     //dbgBegin(256);
 
-    DPRINT(F("getCon\n\r"));
-    DPRINT(F("show c\n\r"));
+    WIFLY_PRINT(F("getCon\n\r"));
+    WIFLY_PRINT(F("show c\n\r"));
     send_P(PSTR("show c\r"));
     len = gets(buf, sizeof(buf));
 
@@ -1310,10 +1298,10 @@ uint16_t WiFly::getConnection()
 
     if (status.tcp == WIFLY_TCP_CONNECTED) {
 	connected = true;
-	if (debugOn) debug.println(F("getCon: TCP connected"));
+	if (debugOn) WIFLY_PRINTLN(F("getCon: TCP connected"));
     } else {
 	connected = false;
-	if (debugOn) debug.println(F("getCon: TCP disconnected"));
+	if (debugOn) WIFLY_PRINTLN(F("getCon: TCP disconnected"));
     }
 
     return res;
@@ -1332,7 +1320,7 @@ uint16_t WiFly::getConnection()
  */
 int8_t WiFly::performScan(uint16_t duration, bool passive) {
 	if (!startCommand()) {
-		debug.println(F("performScan: failed to start"));
+		WIFLY_PRINTLN(F("performScan: failed to start"));
 		return -1;
     }
     
@@ -1351,8 +1339,8 @@ int8_t WiFly::performScan(uint16_t duration, bool passive) {
     // Wait for response (needs some time to finish scanning, depending on
     // the duration set per channel)
     uint16_t to = 0xFFFF;
-	debug.println(F("performScan: timeout = "));
-	debug.println(to, DEC);
+	WIFLY_PRINTLN(F("performScan: timeout = "));
+	WIFLY_PRINTLNB(to, DEC);
     if(match_P(PSTR("SCAN:Found "))) {
     	char buf[4];
     	gets(buf, sizeof(buf));
@@ -1364,7 +1352,7 @@ int8_t WiFly::performScan(uint16_t duration, bool passive) {
     
     // Failed
     finishCommand();
-	debug.println(F("performScan: failed to get results in time"));
+	WIFLY_PRINTLN(F("performScan: failed to get results in time"));
     return -1;
 }
 
@@ -1389,7 +1377,7 @@ uint8_t WiFly::getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * se
     	uint16_t * capabilities, uint8_t * wpa, uint8_t * wps, uint8_t * mac, char * ssid) {
     // Check if scan has been done
 //     if (startCommand()) {
-//     	debug.println(F("getNextScanResult: No scan performed!"));
+//     	WIFLY_PRINTLN(F("getNextScanResult: No scan performed!"));
 //     	finishCommand();
 //     	return 0;
 //     }
@@ -1812,7 +1800,7 @@ boolean WiFly::getres(char *buf, int size)
     };
     int8_t res;
 
-    DPRINTLN(F("getres"));
+    WIFLY_PRINTLN(F("getres"));
 
     res = multiMatch_P(setResult, 2);
 
@@ -1820,11 +1808,11 @@ boolean WiFly::getres(char *buf, int size)
 	return true;
     } else if (res == 0) {
 	gets(buf, size);
-	debug.print(F("ERR: "));
-	debug.println(buf);
+	WIFLY_PRINT(F("ERR: "));
+	WIFLY_PRINTLN(buf);
     } else {
 	/* timeout */
-	DPRINTLN(F("timeout"));
+	WIFLY_PRINTLN(F("timeout"));
 	strncpy_P(buf, PSTR("<timeout>"), size);
     }
     return false;
@@ -2029,7 +2017,7 @@ boolean WiFly::setHost(const char *buf, uint16_t port)
     bool res;
 
     if (!startCommand()) {
-	debug.println(F("SetHost: failed to start command"));
+	WIFLY_PRINTLN(F("SetHost: failed to start command"));
 	return false;
     }
 
@@ -2367,7 +2355,7 @@ uint32_t WiFly::getRate()
 {
     uint8_t rate = getopt(WIFLY_GET_RATE);
 
-    debug.print("rate: "); debug.println(rate);
+    WIFLY_PRINT("rate: "); WIFLY_PRINTLN(rate);
 
     for (uint8_t ind=0; ind < (sizeof(rateMap)/sizeof(rateMap[0])); ind++) {
 	if (rate == pgm_read_byte(&rateMap[ind].setting)) {
@@ -2544,7 +2532,7 @@ boolean WiFly::setBaud(uint32_t baud)
 {
     char buf[16];
     simple_utoa(baud, 10, buf, sizeof(buf));
-    DPRINT(F("set baud ")); DPRINT(buf); DPRINT("\n\r");
+    WIFLY_PRINT(F("set baud ")); WIFLY_PRINT(buf); WIFLY_PRINT("\n\r");
 
     /* Go into command mode, since "set uart instant" will exit command mode */
     startCommand();
@@ -2736,7 +2724,7 @@ boolean WiFly::open(const char *addr, uint16_t port, boolean block)
     }
 
     simple_utoa(port, 10, buf, sizeof(buf));
-    debug.print(F("open ")); debug.print(addr); debug.print(' '); debug.println(buf);
+    WIFLY_PRINT(F("open ")); WIFLY_PRINT(addr); WIFLY_PRINT(' '); WIFLY_PRINTLN(buf);
     send_P(PSTR("open "));
     send(addr);
     send(" ");
@@ -2744,8 +2732,8 @@ boolean WiFly::open(const char *addr, uint16_t port, boolean block)
     send_P(PSTR("\r"));
 
     if (!getPrompt()) {
-	debug.println(F("Failed to get prompt"));
-	debug.println(F("WiFly has crashed and will reboot..."));
+	WIFLY_PRINTLN(F("Failed to get prompt"));
+	WIFLY_PRINTLN(F("WiFly has crashed and will reboot..."));
 	while (1); /* wait for the reboot */
 	return false;
     }
@@ -2762,7 +2750,7 @@ boolean WiFly::open(const char *addr, uint16_t port, boolean block)
 	switch (ch) {
 	case '*':
 	    if (match_P(PSTR("OPEN*"))) {
-		DPRINT(F("Connected\n\r"));
+		WIFLY_PRINT(F("Connected\n\r"));
 		connected = true;
 		/* successful connection exits command mode */
 		inCommandMode = false;
@@ -2775,26 +2763,26 @@ boolean WiFly::open(const char *addr, uint16_t port, boolean block)
 	case 'C': {
 		buf[0] = ch;
 		gets(&buf[1], sizeof(buf)-1);
-		debug.print(F("Failed to connect: ")); debug.println(buf);
+		WIFLY_PRINT(F("Failed to connect: ")); WIFLY_PRINTLN(buf);
 		finishCommand();
 		return false;
 	    }
 
 	default:
 	    if (debugOn) {
-		debug.print(F("Unexpected char: "));
-		debug.print(ch,HEX);
+		WIFLY_PRINT(F("Unexpected char: "));
+		WIFLY_PRINTB(ch,HEX);
 		if (isprint(ch)) {
-		    debug.print(' ');
-		    debug.print(ch);
+		    WIFLY_PRINT(' ');
+		    WIFLY_PRINT(ch);
 		}
-		debug.println();
+		WIFLY_PRINTLN();
 	    }
 	    break;
 	}
     }
 
-    debug.println(F("<timeout>"));
+    WIFLY_PRINTLN(F("<timeout>"));
     finishCommand();
     return false;
 }
@@ -2845,7 +2833,7 @@ boolean WiFly::sendto(
     bool restore = true;
 
     if (!startCommand()) {
-	debug.println(F("sendto: failed to start command"));
+	WIFLY_PRINTLN(F("sendto: failed to start command"));
 	return false;
     }
 
@@ -2858,15 +2846,15 @@ boolean WiFly::sendto(
 	    restore = false;
 	}
 #ifdef DEBUG
-	debug.print(F("sendto: set host and port "));
-	debug.print(host); debug.print(':'); debug.println(port);
+	WIFLY_PRINT(F("sendto: set host and port "));
+	WIFLY_PRINT(host); WIFLY_PRINT(':'); WIFLY_PRINTLN(port);
 #endif
     } else {
 	/* same host and port, no need to restore */
 	restore = false;
 #ifdef DEBUG
-	debug.print(F("sendto: same host and port "));
-	debug.print(host); debug.print(':'); debug.println(port);
+	WIFLY_PRINT(F("sendto: same host and port "));
+	WIFLY_PRINT(host); WIFLY_PRINT(':'); WIFLY_PRINTLN(port);
 #endif
     }
 
@@ -2882,19 +2870,19 @@ boolean WiFly::sendto(
     if (restore) {
 	setHost(lastHost,lastPort);
 #ifdef DEBUG
-	debug.print(F("sendto: restored "));
-	debug.print(lastHost); debug.print(':'); debug.println(lastPort);
+	WIFLY_PRINT(F("sendto: restored "));
+	WIFLY_PRINT(lastHost); WIFLY_PRINT(':'); WIFLY_PRINTLN(lastPort);
 #endif
     } else if (udpAutoPair) {
        setHostIP(F("0.0.0.0"));
     }
 
 #ifdef DEBUG
-    debug.print(F("sendto: send "));
+    WIFLY_PRINT(F("sendto: send "));
     if (data) {
-	debug.println((char *)data);
+	WIFLY_PRINTLN((char *)data);
     } else if (flashData) {
-	debug.println(flashData);
+	WIFLY_PRINTLN(FlashData);
     }
 #endif
 
@@ -2997,8 +2985,8 @@ void WiFly::enableHostRestore()
     restoreHost = true;
     getHostIP(lastHost, sizeof(lastHost));
     lastPort = getHostPort();
-    debug.print(F("enableHostRestore: stored "));
-    debug.print(lastHost); debug.print(':'); debug.println(lastPort);
+    WIFLY_PRINT(F("enableHostRestore: stored "));
+    WIFLY_PRINT(lastHost); WIFLY_PRINT(':'); WIFLY_PRINTLN(lastPort);
 }
 
 /**
@@ -3031,44 +3019,44 @@ boolean WiFly::openComplete()
 	switch (ch) {
 	case '*':
 	    if (match_P(PSTR("OPEN*"))) {
-		DPRINT(F("Connected\n\r"));
+		WIFLY_PRINT(F("Connected\n\r"));
 		connected = true;
 		connecting = false;
 		/* successful connection exits command mode */
 		inCommandMode = false;
-		DPRINT(F("openComplete: true\n\r"));
+		WIFLY_PRINT(F("openComplete: true\n\r"));
 		return true;
 	    } else {
 		/* Failed to connected */
 		connecting = false;
 		finishCommand();
-		DPRINT(F("openComplete: true\n\r"));
+		WIFLY_PRINT(F("openComplete: true\n\r"));
 		return true;
 	    }
 	    break;
 	case 'C': {
 		buf[0] = ch;
 		gets(&buf[1], sizeof(buf)-1);
-		debug.print(F("Failed to connect: ")); debug.println(buf);
+		WIFLY_PRINT(F("Failed to connect: ")); WIFLY_PRINTLN(buf);
 		connecting = false;
 		finishCommand();
-		DPRINT(F("openComplete: true\n\r"));
+		WIFLY_PRINT(F("openComplete: true\n\r"));
 		return true;
 	    }
 
 	default:
 	    buf[0] = ch;
 	    gets(&buf[1], sizeof(buf)-1);
-	    debug.print(F("Unexpected resp: "));
-	    debug.println(buf);
+	    WIFLY_PRINT(F("Unexpected resp: "));
+	    WIFLY_PRINTLN(buf);
 	    connecting = false;
 	    finishCommand();
-	    DPRINT(F("openComplete: true\n\r"));
+	    WIFLY_PRINT(F("openComplete: true\n\r"));
 	    return true;
 	}
     }
 
-    DPRINT(F("openComplete: false\n\r"));
+    WIFLY_PRINT(F("openComplete: false\n\r"));
     return false;
 }
 
@@ -3080,7 +3068,7 @@ boolean WiFly::openComplete()
  */
 void WiFly::terminal()
 {
-    debug.println(F("Terminal ready"));
+    WIFLY_PRINTLN(F("Terminal ready"));
     while (1) {
 	if (serial->available() > 0) {
 	    debug.write(serial->read());
@@ -3110,11 +3098,11 @@ boolean WiFly::close()
 
     if (match_P(PSTR("*CLOS*"))) {
 	finishCommand();
-	debug.println(F("close: got *CLOS*"));
+	WIFLY_PRINTLN(F("close: got *CLOS*"));
 	connected = false;
 	return true;
     } else {
-	debug.println(F("close: failed, no *CLOS*"));
+	WIFLY_PRINTLN(F("close: failed, no *CLOS*"));
     }
 
     /* Check connection state */
