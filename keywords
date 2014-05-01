@@ -34,6 +34,10 @@ disableDHCP	KEYWORD2
 isConnected	KEYWORD2
 isAssociated	KEYWORD2
 
+performScan	KEYWORD2
+getNextScanResult KEYWORD2
+endScan		KEYWORD2
+
 setSSID		KEYWORD2
 setIP		KEYWORD2
 setNetmask	KEYWORD2
