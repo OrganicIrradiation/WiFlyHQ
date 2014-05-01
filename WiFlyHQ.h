@@ -78,12 +78,19 @@
 typedef const char PROGMEM prog_char;
 #endif
 
+// #define WIFLY_DEBUG
+
 #ifdef WIFLY_DEBUG
+#define WIFLY_DEBUG_PRINT debug.print("\nL"); \
+							debug.print(__LINE__); \
+							debug.print(' '); \
+							debug.println(__FUNCTION__);
 #define WIFLY_PRINT(item) debug.print(item)
 #define WIFLY_PRINTLN(item) debug.println(item)
 #define WIFLY_PRINTB(item, b) debug.print(item, b)
 #define WIFLY_PRINTLNB(item, b) debug.println(item, b)
 #else
+#define WIFLY_DEBUG_PRINT
 #define WIFLY_PRINT(item)
 #define WIFLY_PRINTLN(item)
 #define WIFLY_PRINTB(item, b)
@@ -155,9 +162,10 @@ public:
     
     boolean begin(Stream *serialdev, Stream *debugPrint = NULL);
     
-    int8_t performScan(uint16_t duration = 200, bool passive = false);
-    uint8_t getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * security,
+    int8_t performScan(uint8_t duration = 200, bool passive = false);
+    int8_t getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * security,
     	uint16_t * capabilities, uint8_t * wpa, uint8_t * wps, byte * mac, char * ssid);
+    void endScan();
     
     char *getSSID(char *buf, int size);
     uint8_t getJoin();
@@ -351,7 +359,7 @@ public:
 
 	boolean readIntDec(uint16_t * out, uint8_t length);
 	boolean readIntHex(uint16_t * out, uint8_t length = 2);
-	void skipCharacters(uint8_t c = 1);
+	boolean skipCharacters(uint8_t c = 1);
 
     void send_P(const prog_char *str);
     void send(const char *str);

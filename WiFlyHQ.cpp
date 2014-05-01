@@ -34,6 +34,8 @@ extern unsigned int __bss_end;
 extern unsigned int __heap_start;
 extern void *__brkval;
 
+#define RETURN_INT(c,i) if(c){ return i; }
+
 #define WIFLY_STATUS_TCP_MASK 		0x000F
 #define WIFLY_STATUS_TCP_OFFSET		0
 #define WIFLY_STATUS_ASSOC_MASK 	0x0001
@@ -1318,7 +1320,7 @@ uint16_t WiFly::getConnection()
  * @retval number - Number of networks found
  * @author Arno Moonen
  */
-int8_t WiFly::performScan(uint16_t duration, bool passive) {
+int8_t WiFly::performScan(uint8_t duration, bool passive) {
 	if (!startCommand()) {
 		WIFLY_PRINTLN(F("performScan: failed to start"));
 		return -1;
@@ -1338,15 +1340,13 @@ int8_t WiFly::performScan(uint16_t duration, bool passive) {
     
     // Wait for response (needs some time to finish scanning, depending on
     // the duration set per channel)
-    uint16_t to = 0xFFFF;
+    uint16_t to = (duration * 14) + 500;
 	WIFLY_PRINTLN(F("performScan: timeout = "));
 	WIFLY_PRINTLNB(to, DEC);
-    if(match_P(PSTR("SCAN:Found "))) {
+    if(match_P(PSTR("SCAN:Found "), to)) {
     	char buf[4];
     	gets(buf, sizeof(buf));
     	// Return number of networks found
-    	// Note: finishCommand will be called by getNextScanResult
-    	// once it sees the appropriate END message
     	return (int8_t) atou(buf);
     }
     
@@ -1354,6 +1354,19 @@ int8_t WiFly::performScan(uint16_t duration, bool passive) {
     finishCommand();
 	WIFLY_PRINTLN(F("performScan: failed to get results in time"));
     return -1;
+}
+
+
+/**
+ * Flushes remaining output from the scan command and
+ * notifies the library that the scan is finished.
+ * 
+ * @author Arno Moonen
+ */
+void WiFly::endScan() {
+	match_P(PSTR("END:"));
+	flushRx(50);
+	finishCommand();
 }
 
 /**
@@ -1370,69 +1383,71 @@ int8_t WiFly::performScan(uint16_t duration, bool passive) {
  * @param mac - MAC Address (BSSID; 6 bytes)
  * @param ssid - SSID (Network name; up to 32 characters)
  * @retval 0 - End of results
+ * @retval -1 - Error occured (probably a timeout)
  * @retval number - Result index
  * @author Arno Moonen
  */
-uint8_t WiFly::getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * security,
+int8_t WiFly::getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * security,
     	uint16_t * capabilities, uint8_t * wpa, uint8_t * wps, uint8_t * mac, char * ssid) {
-    // Check if scan has been done
-//     if (startCommand()) {
-//     	WIFLY_PRINTLN(F("getNextScanResult: No scan performed!"));
-//     	finishCommand();
+    // Check if END
+    // char next = (char) peek();
+//     if(next == 'E' || next < '0' || next > '9') {
 //     	return 0;
 //     }
-    
-    // TODO Check result of read operations
+
     uint16_t ibuf;
     
     // Result index
-    readIntDec(&ibuf, 2);
+    RETURN_INT(!readIntDec(&ibuf, 2), -1)
     uint8_t index = (uint8_t) ibuf;
+//     if(index == 0) {
+// 	    return 0;
+// 	}
     
     // Skip comma
-    skipCharacters(1);
+    RETURN_INT(!skipCharacters(1), -1)
     
     // Channel
-    readIntDec(&ibuf, 2);
+    RETURN_INT(!readIntDec(&ibuf, 2), -1)
     *channel = (uint8_t) ibuf;
     
     // Skip comma and minus
-    skipCharacters(2);
+    RETURN_INT(!skipCharacters(2), -1)
     
     // RSSI
     readIntDec(&ibuf, 2);
     *rssi = (uint8_t) ibuf;
     
     // Skip comma
-    skipCharacters(1);
+    RETURN_INT(!skipCharacters(1), -1)
     
     // Security mode
     readIntDec(&ibuf, 2);
     *security = (uint8_t) ibuf;
     
     // Skip comma
-    skipCharacters(1);
+    RETURN_INT(!skipCharacters(1), -1)
     
     // Capabilities
     readIntHex(&ibuf, 4);
 	*capabilities = ibuf;
     
     // Skip comma
-    skipCharacters(1);
+    RETURN_INT(!skipCharacters(1), -1)
     
     // WPA Configuration
     readIntHex(&ibuf, 2);
 	*wpa = (uint8_t) ibuf;
     
     // Skip comma
-    skipCharacters(1);
+    RETURN_INT(!skipCharacters(1), -1)
     
     // WPS Mode
     readIntHex(&ibuf, 2);
 	*wps = (uint8_t) ibuf;
     
     // Skip comma
-    skipCharacters(1);
+    RETURN_INT(!skipCharacters(1), -1)
     
     // MAC Address
 	uint8_t lmac[6];
@@ -1441,7 +1456,7 @@ uint8_t WiFly::getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * se
 		lmac[i] = (uint8_t) ibuf;
     	
     	// Skip colon, comma
-    	skipCharacters(1);
+	    RETURN_INT(!skipCharacters(1), -1)
     }
     memcpy((uint8_t*)mac, (uint8_t*)lmac, 6);
     
@@ -1451,12 +1466,13 @@ uint8_t WiFly::getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * se
     return index;
 }
 
-void WiFly::skipCharacters(uint8_t c) {
+boolean WiFly::skipCharacters(uint8_t c) {
 	char ch;
 	while(c > 0) {
-		readTimeout(&ch);
+		RETURN_INT(!readTimeout(&ch), false)
 		c--;
 	}
+	return true;
 }
 
 boolean WiFly::readIntDec(uint16_t * out, uint8_t length) {
