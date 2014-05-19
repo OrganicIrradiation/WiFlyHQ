@@ -1310,6 +1310,40 @@ uint16_t WiFly::getConnection()
 }
 
 /**
+ * Get the MAC address of the WiFly module.
+ * @param mac - pointer to a byte array (length: 6)
+ * @retval true - Command successful
+ * @retval false - Failed
+ * @author Arno Moonen
+ */
+bool WiFly::getMacAddress(byte *mac) {
+	if (!startCommand()) {
+		WIFLY_PRINTLN(F("getMacAddress: failed to start"));
+		return false;
+    }
+    send_P(PSTR("get m\r"));
+    
+    if(match_P(PSTR("Mac Addr="))) {
+    	uint8_t lmac[6];    	
+		uint16_t ibuf;
+		for(uint8_t i = 0; i < 6; i++) {
+			readIntHex(&ibuf, 2);
+			lmac[i] = (uint8_t) ibuf;
+		
+			// Skip colon, comma
+			RETURN_INT(!skipCharacters(1), false)
+		}
+		memcpy((uint8_t*)mac, (uint8_t*)lmac, 6);
+		return true;
+    }
+    
+    // Failed
+    finishCommand();
+	WIFLY_PRINTLN(F("getMacAddress: failed"));
+    return false;
+}
+
+/**
  * Send a request to the WiFly device to start scanning for WiFi
  * networks and wait for the device to comeback with the results.
  * After scanning you must call WiFly::getNextScanResult the

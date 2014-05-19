@@ -176,6 +176,7 @@ public:
     char *getGateway(char *buf, int size);
     char *getDNS(char *buf, int size);
     char *getMAC(char *buf, int size);
+    bool getMacAddress(byte *mac);
     int8_t getDHCPMode();
     uint32_t getRate();
     uint8_t getTxPower();
