@@ -74,8 +74,27 @@
 #include <avr/pgmspace.h>
 #include <IPAddress.h>
 
-#if (ARDUINO >= 103 && ARDUINO < 150)
-//typedef const char PROGMEM prog_char;
+#if (ARDUINO >= 103 && ARDUINO < 105)
+typedef const char PROGMEM prog_char;
+#endif
+
+// #define WIFLY_DEBUG
+
+#ifdef WIFLY_DEBUG
+#define WIFLY_DEBUG_PRINT debug.print("\nL"); \
+							debug.print(__LINE__); \
+							debug.print(' '); \
+							debug.println(__FUNCTION__);
+#define WIFLY_PRINT(item) debug.print(item)
+#define WIFLY_PRINTLN(item) debug.println(item)
+#define WIFLY_PRINTB(item, b) debug.print(item, b)
+#define WIFLY_PRINTLNB(item, b) debug.println(item, b)
+#else
+#define WIFLY_DEBUG_PRINT
+#define WIFLY_PRINT(item)
+#define WIFLY_PRINTLN(item)
+#define WIFLY_PRINTB(item, b)
+#define WIFLY_PRINTLNB(item, b)
 #endif
 
 /* IP Protocol bits */
@@ -117,7 +136,7 @@
 #define WIFLY_WLAN_JOIN_ADHOC		0x04	/* Create an Adhoc network using SSID, Channel, IP and NetMask */
 #define WIFLY_WLAN_JOIN_AP		0x07	/* Create an AP using SSID, Channel, IP and NetMask */                         // added by lpercifield
 
-#define WIFLY_DEFAULT_TIMEOUT		500	/* 500 milliseconds */
+#define WIFLY_DEFAULT_TIMEOUT		1000	/* 500 milliseconds */
 
 #define WIFLY_MODE_WPA			0	
 #define WIFLY_MODE_WEP			1
@@ -143,9 +162,11 @@ public:
     WiFly();
     
     boolean begin(Stream *serialdev, Stream *debugPrint = NULL);
-
-    boolean startCommand();  // GMM from private to pubblic
-    boolean finishCommand(); // GMM from private to pubblic
+    
+    int8_t performScan(uint8_t duration = 200, bool passive = false);
+    int8_t getNextScanResult(uint8_t * channel, uint8_t * rssi, uint8_t * security,
+    	uint16_t * capabilities, uint8_t * wpa, uint8_t * wps, byte * mac, char * ssid);
+    void endScan();
     
     char *getSSID(char *buf, int size);
     uint8_t getJoin();
@@ -156,6 +177,7 @@ public:
     char *getGateway(char *buf, int size);
     char *getDNS(char *buf, int size);
     char *getMAC(char *buf, int size);
+    bool getMacAddress(byte *mac);
     int8_t getDHCPMode();
     uint32_t getRate();
     uint8_t getTxPower();
@@ -276,15 +298,12 @@ public:
     boolean open(const char *addr, uint16_t port=80, boolean block=true);
     boolean open(IPAddress addr, uint16_t port=80, boolean block=true);
     boolean close();
-    boolean closeForce(); // by GMM
     boolean openComplete();
     boolean isConnected();
     boolean isInCommandMode();
     
     virtual size_t write(uint8_t byte);
     virtual int read();
-    //< read data into the buffer until it is full or the next character takes more than timeout millis to arrive
-    virtual int readBufTimeout(char* buf, int size, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);                            // added by Zapalot
     virtual int available();
     virtual void flush();
     virtual int peek();
@@ -348,6 +367,10 @@ public:
     boolean match_P(const prog_char *str, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
     int8_t multiMatch_P(const prog_char *str[], uint8_t count, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
 
+	boolean readIntDec(uint16_t * out, uint8_t length);
+	boolean readIntHex(uint16_t * out, uint8_t length = 2);
+	boolean skipCharacters(uint8_t c = 1);
+
     void send_P(const prog_char *str);
     void send(const char *str);
     void send(const char ch);
@@ -358,6 +381,8 @@ public:
     boolean checkPrompt(const char *str);
     int getResponse(char *buf, int size, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
     boolean readTimeout(char *ch, uint16_t timeout=WIFLY_DEFAULT_TIMEOUT);
+    boolean startCommand();
+    boolean finishCommand();
     char *getopt(int opt, char *buf, int size);
     uint32_t getopt(int opt, uint8_t base=DEC);
     boolean setopt(const prog_char *cmd, const char *buf=NULL, const __FlashStringHelper *buf_P=NULL, bool spacesub=false);

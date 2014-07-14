@@ -35,18 +35,22 @@ disableDHCP			KEYWORD2
 isConnected			KEYWORD2
 isAssociated		KEYWORD2
 
-setSSID				KEYWORD2
-setIP				KEYWORD2
-setNetmask			KEYWORD2
-setGateway			KEYWORD2
-setChannel			KEYWORD2
-setKey				KEYWORD2
-setPassphrase		KEYWORD2
-setSpaceReplace		KEYWORD2
-setDHCP				KEYWORD2
-setIpProtocol		KEYWORD2
-setIpFlags			KEYWORD2
-setUartMode			KEYWORD2
+performScan	KEYWORD2
+getNextScanResult KEYWORD2
+endScan		KEYWORD2
+
+setSSID		KEYWORD2
+setIP		KEYWORD2
+setNetmask	KEYWORD2
+setGateway	KEYWORD2
+setChannel	KEYWORD2
+setKey		KEYWORD2
+setPassphrase	KEYWORD2
+setSpaceReplace	KEYWORD2
+setDHCP		KEYWORD2
+setIpProtocol	KEYWORD2
+setIpFlags	KEYWORD2
+setUartMode	KEYWORD2
 setBroadcastInterval	KEYWORD2
 setTimeAddress		KEYWORD2
 setTimePort			KEYWORD2
