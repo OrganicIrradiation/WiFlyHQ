@@ -98,48 +98,48 @@ typedef const char PROGMEM prog_char;
 #endif
 
 /* IP Protocol bits */
-#define WIFLY_PROTOCOL_UDP		0x01
-#define WIFLY_PROTOCOL_TCP		0x02
-#define WIFLY_PROTOCOL_SECURE		0x04
-#define WIFLY_PROTOCOL_TCP_CLIENT	0x08
-#define WIFLY_PROTOCOL_HTTP		0x10	/* HTTP Client mode */
-#define WIFLY_PROTOCOL_RAW		0x20
-#define WIFLY_PROTOCOL_SMTP		0x40
+#define WIFLY_PROTOCOL_UDP		        0x01
+#define WIFLY_PROTOCOL_TCP		        0x02
+#define WIFLY_PROTOCOL_SECURE		    0x04
+#define WIFLY_PROTOCOL_TCP_CLIENT	    0x08
+#define WIFLY_PROTOCOL_HTTP		        0x10	/* HTTP Client mode */
+#define WIFLY_PROTOCOL_RAW		        0x20
+#define WIFLY_PROTOCOL_SMTP		        0x40
 
 /* IP Flag bits */
-#define WIFLY_FLAG_TCP_KEEP		0x01	/* Keep TCP connection alive when wifi lost */
-#define WIFLY_FLAG_TCP_NODELAY		0x02
-#define WIFLY_FLAG_TCP_RETRY		0x04
-#define WIFLY_FLAG_UDP_RETRY		0x08
-#define WIFLY_FLAG_DNS_CACHING		0x10
-#define WIFLY_FLAG_ARP_CACHING		0x20
-#define WIFLY_FLAG_UDP_AUTO_PAIR	0x40
-#define WIFLY_FLAG_ADD_TIMESTAMP	0x80
+#define WIFLY_FLAG_TCP_KEEP		        0x01	/* Keep TCP connection alive when wifi lost */
+#define WIFLY_FLAG_TCP_NODELAY		    0x02
+#define WIFLY_FLAG_TCP_RETRY		    0x04
+#define WIFLY_FLAG_UDP_RETRY		    0x08
+#define WIFLY_FLAG_DNS_CACHING		    0x10
+#define WIFLY_FLAG_ARP_CACHING		    0x20
+#define WIFLY_FLAG_UDP_AUTO_PAIR	    0x40
+#define WIFLY_FLAG_ADD_TIMESTAMP	    0x80
 
 /* UART mode bits */
-#define WIFLY_UART_MODE_NOECHO		0x01
+#define WIFLY_UART_MODE_NOECHO		    0x01
 #define WIFLY_UART_MODE_DATA_TRIGGER	0x02
 #define WIFLY_UART_MODE_SLEEP_RX_BREAK	0x08
-#define WIFLY_UART_MODE_RX_BUFFER	0x10
+#define WIFLY_UART_MODE_RX_BUFFER	    0x10
 
 /* DHCP modes */
-#define WIFLY_DHCP_MODE_OFF		0x00	/* No DHCP, static IP mode */
-#define WIFLY_DHCP_MODE_ON		0x01	/* get IP, Gateway, and DNS from AP */
-#define WIFLY_DHCP_MODE_AUTOIP		0x02	/* Used with Adhoc networks */
-#define WIFLY_DHCP_MODE_CACHE		0x03	/* Use previous DHCP address based on lease */
-#define WIFLY_DHCP_MODE_SERVER		0x04	/* Server DHCP IP addresses? */
+#define WIFLY_DHCP_MODE_OFF		        0x00	/* No DHCP, static IP mode */
+#define WIFLY_DHCP_MODE_ON		        0x01	/* get IP, Gateway, and DNS from AP */
+#define WIFLY_DHCP_MODE_AUTOIP		    0x02	/* Used with Adhoc networks */
+#define WIFLY_DHCP_MODE_CACHE		    0x03	/* Use previous DHCP address based on lease */
+#define WIFLY_DHCP_MODE_SERVER		    0x04	/* Server DHCP IP addresses? */
 
 /* WLAN Join modes */
-#define WIFLY_WLAN_JOIN_MANUAL		0x00	/* Don't auto-join a network */
-#define WIFLY_WLAN_JOIN_AUTO		0x01	/* Auto-join network set in SSID, passkey, and channel. */
-#define WIFLY_WLAN_JOIN_ANY		0x02	/* Ignore SSID and join strongest network using passkey. */
-#define WIFLY_WLAN_JOIN_ADHOC		0x04	/* Create an Adhoc network using SSID, Channel, IP and NetMask */
-#define WIFLY_WLAN_JOIN_AP		0x07	/* Create an AP using SSID, Channel, IP and NetMask */                         // added by lpercifield
+#define WIFLY_WLAN_JOIN_MANUAL		    0x00	/* Don't auto-join a network */
+#define WIFLY_WLAN_JOIN_AUTO		    0x01	/* Auto-join network set in SSID, passkey, and channel. */
+#define WIFLY_WLAN_JOIN_ANY		        0x02	/* Ignore SSID and join strongest network using passkey. */
+#define WIFLY_WLAN_JOIN_ADHOC		    0x04	/* Create an Adhoc network using SSID, Channel, IP and NetMask */
+#define WIFLY_WLAN_JOIN_AP		        0x07	/* Create an AP using SSID, Channel, IP and NetMask */
 
-#define WIFLY_DEFAULT_TIMEOUT		1000	/* 500 milliseconds */
+#define WIFLY_DEFAULT_TIMEOUT		    1000	/* 500 milliseconds */
 
-#define WIFLY_MODE_WPA			0	
-#define WIFLY_MODE_WEP			1
+#define WIFLY_MODE_WPA			        0	
+#define WIFLY_MODE_WEP			        1
 
 class WFDebug : public Stream {
 public:
@@ -212,7 +212,6 @@ public:
     boolean setGateway(const char *buf);
     boolean setDNS(const char *buf);
     boolean setChannel(uint8_t channel);
-    boolean setChannel(const char *buf); // added by lpercifield
     boolean setKey(const char *buf);
     boolean setPassphrase(const char *buf);
     boolean setSpaceReplace(char ch);
@@ -253,9 +252,6 @@ public:
 
     boolean setIOFunc(const uint8_t func);
     
-    char *getScanNew(char *buf, int size, bool json = false);/*cp*/     // added by lpercifield
-    uint8_t getNumNetworks();/*cp*/                                     // added by lpercifield
-    
     boolean sleep(uint16_t seconds = 0);
     
     boolean time();
@@ -270,11 +266,11 @@ public:
     boolean enableDHCP();
     boolean disableDHCP();
     
-    boolean setSoftAP(const char *buf);                             // added by lpercifield
-    boolean setSoftAP();                                            // added by lpercifield
-    boolean runWebConfig();                                         // added by lpercifield
+    boolean setSoftAP(const char *buf);
+    boolean setSoftAP();
+    boolean runWebConfig();
     boolean createAdhocNetwork(const char *ssid, uint8_t channel);
-    boolean createAP(const char *ssid, const char *channel);        // added by lpercifield
+    boolean createAP(const char *ssid, uint8_t channel);
     boolean join(const char *ssid, uint16_t timeout=20000);
     boolean join(uint16_t timeout=20000);
     boolean join(const char *ssid, const char *password, bool dhcp=true, uint8_t mode=WIFLY_MODE_WPA, uint16_t timeout=20000);
