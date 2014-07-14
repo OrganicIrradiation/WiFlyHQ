@@ -2002,16 +2002,6 @@ boolean WiFly::factoryRestore()
     return res;
 }
 
-boolean WiFly::setDeviceID(const __FlashStringHelper *buf)
-{
-    return setopt(PSTR("set o d"), NULL, buf);
-}
-
-boolean WiFly::setDeviceID(const char *buf)
-{
-    return setopt(PSTR("set o d"), buf);
-}
-
 bool WiFly::setJoin(uint8_t join)
 {
     return setopt(PSTR("set wlan join"), join);
@@ -2156,16 +2146,6 @@ boolean WiFly::setUartMode(const uint8_t mode)
 {
     /* Always set NOECHO, need to keep echo off for library to function correctly */
     return setopt(PSTR("set uart mode"), mode | WIFLY_UART_MODE_NOECHO, HEX);
-}
-
-/** Set the UDP broadcast time interval.
- * @param seconds the number of seconds between broadcasts.
- *                Set this to zero to disable broadcasts.
- * @return true if sucessful, else false.
- */
-boolean WiFly::setBroadcastInterval(const uint8_t seconds)
-{
-    return setopt(PSTR("set broadcast interval"), seconds, HEX);
 }
 
 /**
@@ -2327,7 +2307,7 @@ boolean WiFly::setKey(const char *buf)
  * Set WPA passphrase.
  * Spaces are automatically replaced with the current space substitution 
  * character ('$' is the default).
- * @Note: If your passphrase contains a '$' then use setSpaceReplace() to
+ * @Note: If your passphrase contains a '$' then use setOptReplace() to
  *        change the replacement character to something you're not using.
  */
 boolean WiFly::setPassphrase(const char *buf)
@@ -2337,18 +2317,6 @@ boolean WiFly::setPassphrase(const char *buf)
 
     hide();	/* hide the key */
     return res;
-}
-
-/**
- * Set the space replacement character in WPA passphrase.
- * Default is '$'.
- */
-boolean WiFly::setSpaceReplace(char ch)
-{
-    char buf[2] = { ch, 0 };
-
-    replaceChar = ch;
-    return setopt(PSTR("set opt replace"), buf);
 }
 
 char WiFly::getSpaceReplace(void)

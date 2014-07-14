@@ -24,7 +24,8 @@
  */
 
 /*
- * @file WiFly RN-XV soft AP methods 
+ * @file WiFly RN-XV AP Mode methods
+ * Controls the apmode parameters.
  */
  
 #include "WiFlyHQ.h"

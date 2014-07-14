@@ -211,6 +211,25 @@ public:
     boolean setAPModeReboot(const uint16_t value);
     boolean setAPModeSSID(const char *buf);
     
+    boolean setBroadcastDefaults();
+    boolean setBroadcastInterval(const uint16_t seconds);
+    boolean setBroadcastAddress(const char *buf);
+    boolean setBroadcastAddress(const __FlashStringHelper *buf);
+    boolean setBroadcastBackup(const char *buf);
+    boolean setBroadcastBackup(const __FlashStringHelper *buf);
+    boolean setBroadcastPort(const uint16_t port);
+    boolean setBroadcastRemote(const uint16_t port);
+    
+    boolean setOptAverage(uint8_t value);
+    boolean setOptDeviceID(const __FlashStringHelper *buf);
+    boolean setOptDeviceID(const char *buf);
+    boolean setOptFormat(uint8_t flag);
+    boolean setOptJoinTmr(uint16_t value);
+    boolean setOptReplace(char ch);
+    boolean setOptPassword(const __FlashStringHelper *buf);
+    boolean setOptPassword(const char *buf);
+    boolean setOptSignal(uint8_t value);
+    
     boolean setSSID(const char *buf);
     boolean setIP(const char *buf);
     boolean setIP(const __FlashStringHelper *buf);
@@ -236,8 +255,6 @@ public:
     boolean setIpProtocol(const uint8_t protocol);	/* obsolete */
     boolean setIpFlags(const uint8_t flags);
     boolean setUartMode(const uint8_t mode);
-
-    boolean setBroadcastInterval(const uint8_t seconds);
 
     boolean setTimeAddress(const char *buf);
     boolean setTimePort(const uint16_t port);

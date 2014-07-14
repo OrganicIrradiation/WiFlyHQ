@@ -25,6 +25,7 @@
 
 /*
  * @file WiFly RN-XV ftp methods 
+ * Sets the FTP host address and login information.
  */
 
 #include "WiFlyHQ.h"
