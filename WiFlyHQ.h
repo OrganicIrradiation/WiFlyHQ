@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012,2013 Darran Hunt (darran [at] hunt dot net dot nz)
+ * Copyright (c) 2012-2014 Darran Hunt (darran [at] hunt dot net dot nz)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,16 +124,16 @@ typedef const char PROGMEM prog_char;
 
 /* DHCP modes */
 #define WIFLY_DHCP_MODE_OFF		        0x00	/* No DHCP, static IP mode */
-#define WIFLY_DHCP_MODE_ON		        0x01	/* get IP, Gateway, and DNS from AP */
-#define WIFLY_DHCP_MODE_AUTOIP		    0x02	/* Used with Adhoc networks */
-#define WIFLY_DHCP_MODE_CACHE		    0x03	/* Use previous DHCP address based on lease */
-#define WIFLY_DHCP_MODE_SERVER		    0x04	/* Server DHCP IP addresses? */
+#define WIFLY_DHCP_MODE_ON		        0x01	/* Get IP, Gateway, and DNS from AP */
+#define WIFLY_DHCP_MODE_AUTOIP		    0x02	/* Automatic IP for networks without DHCP */
+#define WIFLY_DHCP_MODE_CACHE		    0x03	/* Cache Mode, previous DHCP address based on lease */
+#define WIFLY_DHCP_MODE_SERVER		    0x04	/* Enables DHCP server in soft AP mode */
 
 /* WLAN Join modes */
 #define WIFLY_WLAN_JOIN_MANUAL		    0x00	/* Don't auto-join a network */
 #define WIFLY_WLAN_JOIN_AUTO		    0x01	/* Auto-join network set in SSID, passkey, and channel. */
-#define WIFLY_WLAN_JOIN_ANY		        0x02	/* Ignore SSID and join strongest network using passkey. */
-#define WIFLY_WLAN_JOIN_ADHOC		    0x04	/* Create an Adhoc network using SSID, Channel, IP and NetMask */
+#define WIFLY_WLAN_JOIN_ANY		        0x02	/* Not implimented in firmware v4.41: Ignore SSID and join strongest network using passkey. */
+#define WIFLY_WLAN_JOIN_RESERVED	    0x03	/* ? */
 #define WIFLY_WLAN_JOIN_AP		        0x07	/* Create an AP using SSID, Channel, IP and NetMask */
 
 #define WIFLY_DEFAULT_TIMEOUT		    1000	/* 500 milliseconds */
@@ -203,6 +203,14 @@ public:
     char *getHostIP(char *buf, int size);
     uint16_t getHostPort();
 
+    boolean setAPModeDefaults();
+    boolean setAPModeBeacon(const uint16_t value);
+    boolean setAPModeLinkMonitor(const uint16_t value);
+    boolean setAPModePassphrase(const char *buf);
+    boolean setAPModeProbe(const uint16_t value);
+    boolean setAPModeReboot(const uint16_t value);
+    boolean setAPModeSSID(const char *buf);
+    
     boolean setSSID(const char *buf);
     boolean setIP(const char *buf);
     boolean setIP(const __FlashStringHelper *buf);
@@ -266,11 +274,11 @@ public:
     boolean enableDHCP();
     boolean disableDHCP();
     
-    boolean setSoftAP(const char *buf);
-    boolean setSoftAP();
     boolean runWebConfig();
     boolean createAdhocNetwork(const char *ssid, uint8_t channel);
-    boolean createAP(const char *ssid, uint8_t channel);
+    boolean createAP(const char *ssid, const char *passphrase, uint8_t channel);
+    boolean setSoftAP(const char *ssid, const char *passphrase, uint8_t channel);
+    boolean setSoftAP();
     boolean join(const char *ssid, uint16_t timeout=20000);
     boolean join(uint16_t timeout=20000);
     boolean join(const char *ssid, const char *password, bool dhcp=true, uint8_t mode=WIFLY_MODE_WPA, uint16_t timeout=20000);
@@ -304,6 +312,9 @@ public:
     virtual void flush();
     virtual int peek();
 
+    uint8_t simple_utoa(uint32_t val, uint8_t base, char *buf, int size);
+    uint32_t atoh(char *buf, bool checkPrefix);
+    uint32_t atou(const char *buf);
     char *iptoa(IPAddress addr, char *buf, int size);
     IPAddress atoip(char *buf);
     boolean isDotQuad(const char *addr);

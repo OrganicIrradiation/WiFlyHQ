@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012,2013 Darran Hunt (darran [at] hunt dot net dot nz)
+ * Copyright (c) 2012-2014 Darran Hunt (darran [at] hunt dot net dot nz)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -196,7 +196,7 @@ typedef enum {
  * @returns number of characters written to the buffer
  *          not including the null terminator (i.e. size of the string)
  **/
-static int simple_utoa(uint32_t val, uint8_t base, char *buf, int size)
+uint8_t WiFly::simple_utoa(uint32_t val, uint8_t base, char *buf, int size)
 {
     char tmpbuf[16];
     int ind=0;
@@ -230,7 +230,7 @@ static int simple_utoa(uint32_t val, uint8_t base, char *buf, int size)
 }
 
 /** Simple hex string to uint32_t */
-static uint32_t atoh(char *buf, bool checkPrefix = true)
+uint32_t WiFly::atoh(char *buf, bool checkPrefix = true)
 {
     uint32_t res=0;
     char ch;
@@ -255,7 +255,7 @@ static uint32_t atoh(char *buf, bool checkPrefix = true)
 }
 
 /** Simple ASCII to unsigned int */
-static uint32_t atou(const char *buf)
+uint32_t WiFly::atou(const char *buf)
 {
     uint32_t res=0;
 
@@ -2688,17 +2688,15 @@ boolean WiFly::ping(const char *host)
     char ip[16];
     const char *addr = host;
 
-    if (!isDotQuad(host)) {
-	/* do a DNS lookup to get the IP address */
-	if (!getHostByName(host, ip, sizeof(ip))) {
-	    return false;
-	}
-	addr = ip;
-    }
-
     startCommand();
-    send_P(PSTR("ping "));
-    send(addr);
+    if (!isDotQuad(host)) {
+	    /* Use new ping function in firmware v4.41 to automatically do a DNS lookup */
+        send_P(PSTR("ping d"));
+        send(host);
+    } else {
+        send_P(PSTR("ping "));
+        send(addr);
+    }
     send('\r');
 
     match_P(PSTR("Ping try"));
@@ -2719,85 +2717,15 @@ boolean WiFly::ping(const char *host)
     return false;
 }
 
-/**
- * Create an Adhoc WiFi network.
- * The WiFly is assigned IP address 169.254.1.1.
- * @param ssid the SSID to use for the network
- * @param channel the WiFi channel to use; 1 to 13.
- * @retval true - successfully create Ad Hoc network
- * @retval false - failed
- * @note the WiFly is rebooted as the final step of this command.
- */
-boolean WiFly::createAdhocNetwork(const char *ssid, uint8_t channel)
-{
-    startCommand();
-    setDHCP(WIFLY_DHCP_MODE_OFF);
-    setIP(F("169.254.1.1"));
-    setNetmask(F("255.255.0.0"));
-
-    setJoin(WIFLY_WLAN_JOIN_ADHOC);
-    setSSID(ssid);
-    setChannel(channel);
-    save();
-    finishCommand();
-    reboot();
-    return true;
-}
-
-/**
- * Create an Access Point.
- * The WiFly is assigned IP address 169.254.1.1.
- * @param ssid the SSID to use for the network
- * @param channel the WiFi channel to use; 1 to 13.
- * @retval true - successfully create Ad Hoc network
- * @retval false - failed
- * @note the WiFly is rebooted as the final step of this command.
- */
-boolean WiFly::createAP(const char *ssid, uint8_t channel)
-{
-    startCommand();
-    setChannel(channel);
-    setJoin(WIFLY_WLAN_JOIN_AP);
-    setIP(F("169.254.1.1"));
-	setGateway("169.254.1.1");
-	setNetmask(F("255.255.255.0"));
-    setDHCP(WIFLY_DHCP_MODE_SERVER);
-    setSSID(ssid);
-    
-    save();
-    finishCommand();
-    reboot();
-    return true;
-}
-/**
- * Create an Soft Access Point.
- * @param buff the SSID to use for the network
- * @retval true - successfully create Access Point
- * @retval false - failed
- */
-boolean WiFly::setSoftAP(const char *buf)
-{
-    return setopt(PSTR("apmode "), buf);
-}
-
-/**
- * Create an Soft Access Point.
- * The WiFly is assigned IP address 169.254.1.1.
- * This uses the DeviceID plus the last byte of the MAC for the SSID
- * @retval true - successfully create Ad Hoc network
- * @retval false - failed
- * @note the WiFly is rebooted as the final step of this command.
- */
-boolean WiFly::setSoftAP()
-{
-    return setopt(PSTR("apmode"));
-}
-
-
 boolean WiFly::runWebConfig()
 {
-	startCommand();
-	println("run web_app");
+	if (!startCommand()) {
+        return false;
+    }
+    send_P(PSTR("run web_app\r"));
+    finishCommand();
+    return true;
+    
 	boolean bwifiConfig = false;
 	while(bwifiConfig == false){
 		bwifiConfig = match("Disabling AP mode",60000);
